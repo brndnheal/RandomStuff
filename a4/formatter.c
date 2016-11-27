@@ -29,6 +29,7 @@ int process_command(char *new_line){
 		if(strcmp(cmd,".LW") == 0) {
 			LW = atoi(word);
 			FT = 1;
+			return 2;
 		}
 		else if(strcmp(cmd,".LM") == 0) LM = atoi(word);
 		else if(strcmp(cmd,".LS") == 0) LS = atoi(word);
@@ -45,12 +46,13 @@ int process_command(char *new_line){
 }
 
 void make_new_line(char * format_line){
-	format_line=(char*)realloc(format_line,sizeof(char)*LW); 
+	//format_line=(char*)realloc(format_line,sizeof(char)*LW); 
 	int i=0;
 	while(i < LW){ /*deal with left margin */
 		format_line[i]=' ';
 		i++;
 	}
+	//printf("format : %s\n",format_line);
 
 }
 
@@ -65,11 +67,13 @@ void reformating(char** lines,int num_lines){
 	char* reformat_line = (char*)malloc(sizeof(char)*LW);
 	make_new_line(reformat_line);
 	first = 1;
+	int counter=LM;
 	for(int i =0;i<num_lines;i++){
 
 		new_line=lines[i];
 		/* if the line is a command line, the process_command() will take the information */
 		is_cmd = process_command(new_line);
+	
 		if(!is_cmd){
 			/*if it is the text need to process, then check if it needs formating */
 			if(FT){
@@ -77,8 +81,11 @@ void reformating(char** lines,int num_lines){
 
 				/* dealing the blank line*/
 				if(w == NULL){ 
-					if(strlen(reformat_line) > LM){ /* if exceed space of LM, start next line */
-						printf("%s\n",reformat_line);
+					if(counter > LM){ /* if exceed space of LM, start next line */
+						printf("%s",reformat_line);
+						if(i!=num_lines-1){
+							printf("\n");
+						}
 					}
 					
 					for(ls = LS; ls > 0; ls --){  /* dealing with Line Space */
@@ -93,13 +100,16 @@ void reformating(char** lines,int num_lines){
 					/* The next paragraph */
 					make_new_line(reformat_line);
 					first = 1;
+					counter=LM;
 
 				}
 				/* processing normally: only one space after each word */
-				int counter=LM;
 				while(w != NULL){
 					if(counter + 1 +strlen(w) > LW){  /* add an extra 1: \0 */
-						printf("%s\n", reformat_line);
+						printf("%s", reformat_line);
+						if(i!=num_lines-1){
+							printf("\n");
+						}
 						for(ls = LS; ls > 0; ls --){
 
 							printf( "\n");
@@ -113,8 +123,8 @@ void reformating(char** lines,int num_lines){
 						reformat_line[counter]=' ';
 						counter++;
 					}
-					for(int i=0;i<strlen(w);i++){
-						reformat_line[counter+i]=w[i];
+					for(int j=0;j<strlen(w);j++){
+						reformat_line[counter+j]=w[j];
 					}
 					counter+=strlen(w);
 					w = strtok(NULL, "\r\n\t ");
@@ -123,20 +133,27 @@ void reformating(char** lines,int num_lines){
 
 			}
 			else{
-				printf("%s\n", new_line);  /* IF FT is off, just print the unformated file   */
+				printf("%s", new_line);
+				if(i!=num_lines-1){
+					printf("\n");
+				}
 			}
 			
 		}
 		/*if there is a command, might need to reindent*/
 		else{
+			if(is_cmd==2){
+				reformat_line=(char*)realloc(reformat_line,sizeof(char)*LW); 
+			}
 			make_new_line(reformat_line);
+			counter=LM;
 		}
 
 		free(lines[i]);
 
 	}
-	if(strlen(reformat_line) > LM) 
-		printf("%s\n",reformat_line);
+	if(counter > LM) 
+		printf("%s",reformat_line);
 	free(reformat_line);
 
 }
