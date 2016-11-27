@@ -14,10 +14,10 @@
 int main(int argc, char *argv[]) {
 
 	if(argc == 1){
-		
 		char **lines = (char**) malloc(sizeof(char *) * CUR_BASE);
 		int num_lines= read_stdin(lines);
 		format_lines(lines,num_lines);
+	//	free(lines);
 	}
 	else{
 		FILE* file = fopen(argv[1],"r");
